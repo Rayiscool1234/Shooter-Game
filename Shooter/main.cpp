@@ -4,7 +4,7 @@
 
 
 
-float bulletFirerate{100};
+float bulletFirerate{500};
 
 
 
@@ -36,17 +36,38 @@ public:
     }
 };
 
+class Enemy {
+public:
+    sf::RectangleShape shape;
+    float speed = 100.0f; // Adjust the speed as needed
+
+    Enemy(float x, float y) {
+        shape.setSize(sf::Vector2f(40.0f, 40.0f)); // Size of the enemy
+        shape.setFillColor(sf::Color::Blue); // Color of the enemy
+        shape.setPosition(x, y);
+    }
+
+    void update(float deltaTime) {
+        // Example behavior: move down the screen
+        shape.move(0, speed * deltaTime);
+    }
+};
+
 
 class Bullet {
 public:
     sf::RectangleShape shape;
-    float speed = 500.0f; // Adjust bullet speed as needed
+    float speed = 1000.0f; // Speed of the bullet
     sf::Vector2f direction;
 
     Bullet(float x, float y, sf::Vector2f dir) : direction(dir) {
         shape.setSize(sf::Vector2f(10.0f, 5.0f));
         shape.setFillColor(sf::Color::Yellow);
         shape.setPosition(x, y);
+
+        // Calculate rotation
+        float rotation = atan2(direction.y, direction.x) * 180 / 3.14159265;
+        shape.setRotation(rotation);
     }
 
     void update(float deltaTime) {
@@ -87,16 +108,39 @@ int WinMain() {
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         sf::Vector2f playerPos = player.shape.getPosition();
-        sf::Vector2f direction = sf::Vector2f(mousePos.x - playerPos.x, mousePos.y - playerPos.y);
 
+        sf::Vector2f direction = sf::Vector2f(mousePos.x - playerPos.x, mousePos.y - playerPos.y);
         float magnitude = std::sqrt(direction.x * direction.x + direction.y * direction.y);
         direction /= magnitude; // Normalize the direction vector
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && Reload(clockBullets.restart().asMilliseconds())) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && Reload(clockBullets.getElapsedTime().asMilliseconds())) {
             bullets.push_back(Bullet(playerPos.x + 25, playerPos.y + 25, direction)); // Adjust bullet spawn position if needed
+            clockBullets.restart();
         }
 
+        std::vector<Enemy> enemies;
+        sf::Clock enemySpawnClock;
+
+        // In your game loop
+        if (enemySpawnClock.getElapsedTime().asSeconds() > 1.0f) { // Spawn an enemy every second
+            enemies.push_back(Enemy(rand() % window.getSize().x, 0)); // Spawn at random x, top of the screen
+            enemySpawnClock.restart();
+        }
+
+
         window.clear(sf::Color::Color(0, 77, 13));
+
+        // In your game loop
+        for (auto& enemy : enemies) {
+            enemy.update(deltaTime);
+            window.draw(enemy.shape);
+        }
+
+        // Optional: Remove off-screen enemies
+        enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [&window](const Enemy& e) {
+            return e.shape.getPosition().y > window.getSize().y;
+            }), enemies.end());
+
 
         for (auto& bullet : bullets) {
             bullet.update(deltaTime);
