@@ -23,6 +23,7 @@ public:
     sf::RectangleShape shape;
     float speed{ 250.0f }; // Speed in pixels per second
     float stamina{ 10.0f }; // stamina points
+    float staminaCooldown{ 5.0f };
     bool isrunning{ false };
     Player(float x, float y) {
         shape.setSize(sf::Vector2f(50.0f, 50.0f));
@@ -31,12 +32,13 @@ public:
     }
 
     void update(float deltaTime) {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) shape.move(0, -speed * deltaTime);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) shape.move(0, speed * deltaTime);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) shape.move(-speed * deltaTime, 0);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) shape.move(speed * deltaTime, 0);
-        if ( stamina != 0.0 && !isrunning && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)) { speed = speed * 2; isrunning = true; }
-        else { speed = 250.0f; isrunning = false; }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) shape.move(0, -speed * deltaTime);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) shape.move(0, speed * deltaTime);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) shape.move(-speed * deltaTime, 0);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) shape.move(speed * deltaTime, 0);
+        if (stamina > 3 && !isrunning && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)) { speed *= 2; isrunning = true; stamina -= 1.0f; }
+        else { speed = 250.0f; isrunning = false; if (staminaCooldown < 0) stamina += 1; else staminaCooldown -= 0.1; }
+        if (isrunning) staminaCooldown = 5.0f;
     }
 };
 
@@ -141,9 +143,9 @@ int WinMain() {
         }
 
         // Optional: Remove off-screen enemies
-        enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [&window](const Enemy& e) {
-            return e.shape.getPosition().y > window.getSize().y;
-            }), enemies.end());
+        //enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [&window](const Enemy& e) {
+        //    return e.shape.getPosition().y > window.getSize().y;
+        //    }), enemies.end());
 
 
         for (auto& bullet : bullets) {
