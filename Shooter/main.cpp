@@ -310,9 +310,9 @@ int WinMain() {
             }), bullets.end());
 
         // Optional: Remove off-screen enemies
-        enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [&window](const Enemy& e) {
-            return e.shape.getPosition().y > window.getSize().y;
-            }), enemies.end());
+        //enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [&window](const Enemy& e) {
+        //    return e.shape.getPosition().y > window.getSize().y;
+        //    }), enemies.end());
 
         // Rendering
         window.clear(sf::Color::Color(0, 77, 13));
