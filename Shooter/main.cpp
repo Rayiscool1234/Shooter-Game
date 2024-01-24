@@ -8,6 +8,13 @@
 
 float bulletFirerate{250};
 
+int score{ 0 };
+int regularScore{ 25 };
+int speedyScore{ 50 };
+int tankyScore{ 50 };
+int bossScore{ 75 };
+
+
 int random_int(int min, int max) {
     std::srand(std::time(nullptr));
     return min + std::rand() % (max - min + 1);
@@ -104,8 +111,8 @@ public:
     sf::RectangleShape shape;
     float speed{ 25.0f }; // Adjust the speed as needed
     float health{ 50.0f }; // Example health value
-    enum EnemyType {Regular, Speedy, Tanky, Boss, CURSED};
-    
+    enum EnemyType {Regular, Speedy, Tanky, MiniBoss, MegaBoss, SpeedDemon, CURSED};
+    EnemyType Type{};
 
     void convertEnemy(EnemyType typeOfEnemy = CURSED) {
         switch (typeOfEnemy) {
@@ -120,11 +127,21 @@ public:
             health = 75.0f;
             shape.setFillColor(sf::Color::Color(0, 204, 34));
             break;
-        case Boss:
+        case MiniBoss:
             speed = 50.0f;
             health = 75.0f;
             shape.setFillColor(sf::Color::Color(0, 77, 50));
             break;
+        case MegaBoss:
+            speed = 75.0f;
+            health = 125.0f;
+            shape.setFillColor(sf::Color::Color(0, 77, 50));
+            shape.setSize(sf::Vector2f(60.0f, 60.0f));
+            break;
+        case SpeedDemon:
+            speed = 270.0f;
+            health = 5.0f;
+            // finish demonspeed
         default:
             throw std::runtime_error("Illegal enemy type");
             break;
@@ -134,6 +151,7 @@ public:
 
     Enemy(float x, float y, EnemyType typeOfEnemy = Regular) {
         
+        Type = typeOfEnemy;
         shape.setOutlineColor(sf::Color::Red);
         shape.setSize(sf::Vector2f(40.0f, 40.0f)); // Size of the enemy
         convertEnemy(typeOfEnemy);
@@ -147,6 +165,10 @@ public:
     }
     void takeDamage(float damage) {
         health -= damage;
+    }
+
+    EnemyType Enemytype() const {
+        return Type;
     }
 
     bool isDead() const {
@@ -212,6 +234,7 @@ int WinMain() {
     Player player(400, 300);
     std::vector<Bullet> bullets;
     bool paused{false};
+    
    // ExtractResource(L"ID_MYFONT", L"temp_font.ttf");
 
     // Load the font using SFML
@@ -270,7 +293,7 @@ int WinMain() {
         // In your game loop
         if (enemySpawnClock.getElapsedTime().asSeconds() > 1.0f) { // Spawn an enemy every second
             // Spawn at random x, top of the screen
-            int random{ random_int(0, 100) };
+            int random{ random_int(0, 125) };
             if (random <= 25)
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Speedy));
             else if (random <= 50)
@@ -278,7 +301,9 @@ int WinMain() {
             else if (random <= 75)
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Tanky));
             else if (random <= 100)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Boss));
+                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MiniBoss));
+            else if (random <= 125)
+                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
             else
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::CURSED));
             
@@ -302,6 +327,18 @@ int WinMain() {
         }
         // Remove dead enemies and used bullets
         enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Enemy& enemy) {
+            if (enemy.isDead() && enemy.Enemytype() == Enemy::Regular)
+                score += regularScore;
+            else if (enemy.isDead() && enemy.Enemytype() == Enemy::Speedy)
+                score += speedyScore;
+            else if (enemy.isDead() && enemy.Enemytype() == Enemy::Tanky)
+                score += tankyScore;
+            else if (enemy.isDead() && enemy.Enemytype() == Enemy::MiniBoss)
+                score += bossScore;
+            else if (enemy.isDead() && enemy.Enemytype() == Enemy::MegaBoss)
+                score += bossScore * 3;
+            else if (enemy.isDead())
+                score -= -10000000000;
             return enemy.isDead();
             }), enemies.end());
 
@@ -349,8 +386,11 @@ int WinMain() {
 
             window.display();
         }
-        
-    
+        // Saves score in file 'score.txt'
+        std::ofstream myfile;
+        myfile.open("score.txt");
+        myfile << "Score: " << score; 
+        myfile.close(); 
     
 
     return 0;
