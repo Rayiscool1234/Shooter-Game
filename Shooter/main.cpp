@@ -7,7 +7,7 @@
 
 sf::Clock randclock;
 
-float bulletFirerate{125};
+float bulletFirerate{500};
 
 int score{ 0 };
 int regularScore{ 25 };
@@ -236,7 +236,8 @@ int WinMain() {
     Player player(400, 300);
     std::vector<Bullet> bullets;
     bool paused{false};
-    
+    sf::Clock clocka;
+    int waveElapse{};
    // ExtractResource(L"ID_MYFONT", L"temp_font.ttf");
 
     // Load the font using SFML
@@ -291,9 +292,12 @@ int WinMain() {
         }
 
 
+        waveElapse = clocka.getElapsedTime().asMilliseconds() / 100000;
+
+
 
         // In game loop
-        if (enemySpawnClock.getElapsedTime().asSeconds() > 1.0f) { // Spawn an enemy every second
+        if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every second
             // Spawn at random x, top of the screen
             // Randomizes the enemies
             int random{ random_int(0, 150) };
