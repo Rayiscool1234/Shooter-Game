@@ -5,8 +5,9 @@
 #include <cstdlib>
 #include <ctime>
 
+sf::Clock randclock;
 
-float bulletFirerate{250};
+float bulletFirerate{125};
 
 int score{ 0 };
 int regularScore{ 25 };
@@ -16,7 +17,7 @@ int bossScore{ 75 };
 
 
 int random_int(int min, int max) {
-    std::srand(std::time(nullptr));
+    std::srand(std::time(nullptr) + randclock.getElapsedTime().asMicroseconds());
     return min + std::rand() % (max - min + 1);
 }
 
@@ -141,9 +142,10 @@ public:
         case SpeedDemon:
             speed = 270.0f;
             health = 5.0f;
-            // finish demonspeed
+            shape.setFillColor(sf::Color::Color(255, 255, 255));
+            break;
         default:
-            throw std::runtime_error("Illegal enemy type");
+            throw new std::runtime_error("Illegal enemy type");
             break;
         }
     }
@@ -258,7 +260,7 @@ int WinMain() {
             continue;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || paused) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && paused) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !paused) {
                 paused = true;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
@@ -290,10 +292,11 @@ int WinMain() {
 
 
 
-        // In your game loop
+        // In game loop
         if (enemySpawnClock.getElapsedTime().asSeconds() > 1.0f) { // Spawn an enemy every second
             // Spawn at random x, top of the screen
-            int random{ random_int(0, 125) };
+            // Randomizes the enemies
+            int random{ random_int(0, 150) };
             if (random <= 25)
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Speedy));
             else if (random <= 50)
@@ -304,6 +307,8 @@ int WinMain() {
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MiniBoss));
             else if (random <= 125)
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
+            else if (random <= 150)
+                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::SpeedDemon));
             else
                 enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::CURSED));
             
@@ -337,6 +342,8 @@ int WinMain() {
                 score += bossScore;
             else if (enemy.isDead() && enemy.Enemytype() == Enemy::MegaBoss)
                 score += bossScore * 3;
+            else if (enemy.isDead() && enemy.Enemytype() == Enemy::SpeedDemon)
+                score += speedyScore * 3;
             else if (enemy.isDead())
                 score -= -10000000000;
             return enemy.isDead();
