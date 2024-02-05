@@ -333,9 +333,9 @@ int WinMain() {
 
         // In game loop
         if (waveElapse <= 4.9f) {
-            if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every second
+            if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every 5 seconds deducted by how long the game is open
                 // Spawn at random x, top of the screen
-                // Randomizes the enemies
+                // Randomizes the enemies according to a rarity set
                 int random{ random_int(0, 100) };
                 if (random <= 40)
                     enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Regular));
@@ -358,7 +358,7 @@ int WinMain() {
         else {
             if (enemySpawnClock.getElapsedTime().asSeconds() > 0.1f) { // Spawn an enemy every tenth of a second
                 // Spawn at random x, top of the screen
-                // Randomizes the enemies
+                // Randomizes the enemies according to a rarity set
                 int random{ random_int(0, 100) };
                 if (random <= 40)
                     enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Regular));
