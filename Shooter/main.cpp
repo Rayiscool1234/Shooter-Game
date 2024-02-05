@@ -55,13 +55,15 @@ void ExtractResource(const std::wstring& resourceName, const std::wstring& outpu
 class Player {
 public:
     sf::RectangleShape shape;
-    const float normalSpeed{ 250.0f }; // Normal speed in pixels per second
-    const float sprintSpeed{ 500.0f }; // Sprint speed
+    float normalSpeed{ 250.0f }; // Normal speed in pixels per second
+    float sprintSpeed{ 500.0f }; // Sprint speed
     float speed{ normalSpeed };
     float stamina{ 10.0f }; // Stamina points
     float staminaCooldown{ 5.0f }; // Cooldown for stamina regeneration
     bool isrunning{ false };
-    float health{ 250.0f }; // Player's health
+    float health{ 1000.0f }; // Player's health
+    float speedNegator{ 150.0f };
+    bool godmode{ false };
 
     Player(float x, float y) {
         shape.setSize(sf::Vector2f(50.0f, 50.0f));
@@ -103,6 +105,20 @@ public:
                 staminaCooldown -= deltaTime; // Cooldown for stamina regeneration
             }
         }
+        
+        if (health < 1000) {
+
+            if (normalSpeed >= 50) {
+                normalSpeed = (health / 4) - speedNegator;
+                sprintSpeed = (health / 4) - speedNegator * 0.5;
+            }
+        }
+
+        if (godmode) {
+            if (health <= 20)
+                health = 50;
+        }
+
     }
 };
 
@@ -297,7 +313,7 @@ int WinMain() {
 
 
         // In game loop
-        if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every second
+        if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every 5 seconds and decreases by how long the game is ran.
             // Spawn at random x, top of the screen
             // Randomizes the enemies
             int random{ random_int(0, 150) };
@@ -329,7 +345,6 @@ int WinMain() {
             // Check for collision with player
             if (enemy.shape.getGlobalBounds().intersects(player.shape.getGlobalBounds())) {
                 player.takeDamage(10.0f); // Example damage amount
-                // Optional: Destroy the enemy or make it stop moving
             }
 
             window.draw(enemy.shape);
