@@ -1,0 +1,1 @@
+This repository is meant to show my game development skills. This game is not well finished and won't be for a very extended period of time. if you wish to take this to enjoy and play, i'll be fine with that. Everything about legal stuff in the license
