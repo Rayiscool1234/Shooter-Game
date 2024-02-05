@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
+#include <stdexcept>
 
 sf::Clock randclock;
 
@@ -14,6 +15,18 @@ int regularScore{ 25 };
 int speedyScore{ 50 };
 int tankyScore{ 50 };
 int bossScore{ 75 };
+
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
 
 
 int random_int(int min, int max) {
@@ -123,6 +136,11 @@ public:
 };
 
 
+/// <summary>
+/// This is the enemy class, allows creation of enemies and types of such enemies. 
+/// 
+/// 
+/// </summary>
 class Enemy {
 public:
     sf::RectangleShape shape;
@@ -131,6 +149,7 @@ public:
     enum EnemyType {Regular, Speedy, Tanky, MiniBoss, MegaBoss, SpeedDemon, CURSED};
     EnemyType Type{};
 
+    // Converts enemy into any available type.
     void convertEnemy(EnemyType typeOfEnemy = CURSED) {
         switch (typeOfEnemy) {
         case Regular:
@@ -313,28 +332,52 @@ int WinMain() {
 
 
         // In game loop
-        if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every 5 seconds and decreases by how long the game is ran.
-            // Spawn at random x, top of the screen
-            // Randomizes the enemies
-            int random{ random_int(0, 150) };
-            if (random <= 25)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Speedy));
-            else if (random <= 50)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Regular));
-            else if (random <= 75)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Tanky));
-            else if (random <= 100)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MiniBoss));
-            else if (random <= 125)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
-            else if (random <= 150)
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::SpeedDemon));
-            else
-                enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::CURSED));
-            
-            enemySpawnClock.restart();
-        }
+        if (waveElapse <= 4.9f) {
+            if (enemySpawnClock.getElapsedTime().asSeconds() > 5.0f - waveElapse) { // Spawn an enemy every second
+                // Spawn at random x, top of the screen
+                // Randomizes the enemies
+                int random{ random_int(0, 100) };
+                if (random <= 40)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Regular));
+                else if (random <= 60)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Speedy));
+                else if (random <= 75)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Tanky));
+                else if (random <= 90)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MiniBoss));
+                else if (random <= 95)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::SpeedDemon));
+                else if (random <= 100)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
+                else
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::CURSED));
 
+                enemySpawnClock.restart();
+            }
+        }
+        else {
+            if (enemySpawnClock.getElapsedTime().asSeconds() > 0.1f) { // Spawn an enemy every tenth of a second
+                // Spawn at random x, top of the screen
+                // Randomizes the enemies
+                int random{ random_int(0, 100) };
+                if (random <= 40)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Regular));
+                else if (random <= 60)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Speedy));
+                else if (random <= 75)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::Tanky));
+                else if (random <= 90)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MiniBoss));
+                else if (random <= 95)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::SpeedDemon));
+                else if (random <= 100)
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
+                else
+                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::CURSED));
+
+                enemySpawnClock.restart();
+            }
+        }
 
         window.clear(sf::Color::Color(0, 77, 13));
 
@@ -415,7 +458,7 @@ int WinMain() {
         // Saves score in file 'score.txt'
         std::ofstream myfile;
         myfile.open("score.txt");
-        myfile << "Score: " << score; 
+        myfile << "Score: " << score;
         myfile.close(); 
     
 
