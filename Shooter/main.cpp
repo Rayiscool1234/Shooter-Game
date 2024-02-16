@@ -1,10 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include <vector>
-#include <cmath>
+#include <SFML/Graphics/Font.hpp>
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
+#include "player.hpp"
+#include "Enemy.hpp"
+#include "Bullet.hpp"
+
 
 sf::Clock randclock;
 
@@ -15,18 +18,6 @@ int regularScore{ 25 };
 int speedyScore{ 50 };
 int tankyScore{ 50 };
 int bossScore{ 75 };
-
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
 
 
 int random_int(int min, int max) {
@@ -65,195 +56,33 @@ void ExtractResource(const std::wstring& resourceName, const std::wstring& outpu
 /// 
 /// 
 /// 
-class Player {
+
+
+class Package {
 public:
-    sf::RectangleShape shape;
-    float normalSpeed{ 250.0f }; // Normal speed in pixels per second
-    float sprintSpeed{ 500.0f }; // Sprint speed
-    float speed{ normalSpeed };
-    float stamina{ 10.0f }; // Stamina points
-    float staminaCooldown{ 5.0f }; // Cooldown for stamina regeneration
-    bool isrunning{ false };
-    float health{ 1000.0f }; // Player's health
-    float speedNegator{ 150.0f };
-    bool godmode{ false };
-
-    Player(float x, float y) {
-        shape.setSize(sf::Vector2f(50.0f, 50.0f));
-        shape.setFillColor(sf::Color::Red);
-        shape.setPosition(x, y);
-    }
-    void takeDamage(float damageAmount) {
-        health -= damageAmount;
-        if (health <= 0) {
-            // Handle player death, like game over
-        }
-    }
-
-
-    bool isDead() const {
-        return health <= 0;
-    }
-
-    void update(float deltaTime) {
-        // Movement
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) shape.move(0, -speed * deltaTime);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) shape.move(0, speed * deltaTime);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) shape.move(-speed * deltaTime, 0);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) shape.move(speed * deltaTime, 0);
-
-        // Sprinting logic
-        if ((stamina > 0.0f) && !isrunning && (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))) {
-            speed = sprintSpeed;
-            isrunning = true;
-            stamina -= deltaTime; // Decrease stamina while running
-        }
-        else {
-            speed = normalSpeed;
-            isrunning = false;
-            if (staminaCooldown <= 0) {
-                stamina = std::min(stamina + deltaTime, 10.0f); // Regenerate stamina
-            }
-            else {
-                staminaCooldown -= deltaTime; // Cooldown for stamina regeneration
-            }
-        }
-        
-        if (health < 1000) {
-
-            if (normalSpeed >= 50) {
-                normalSpeed = (health / 4) - speedNegator;
-                sprintSpeed = (health / 4) - speedNegator * 0.5;
-            }
-        }
-
-        if (godmode) {
-            if (health <= 20)
-                health = 50;
-        }
-
-    }
-};
-
-
-/// <summary>
-/// This is the enemy class, allows creation of enemies and types of such enemies. 
-/// 
-/// 
-/// </summary>
-class Enemy {
-public:
-    sf::RectangleShape shape;
-    float speed{ 25.0f }; // Adjust the speed as needed
-    float health{ 50.0f }; // Example health value
-    enum EnemyType {Regular, Speedy, Tanky, MiniBoss, MegaBoss, SpeedDemon, CURSED};
-    EnemyType Type{};
-
-    // Converts enemy into any available type.
-    void convertEnemy(EnemyType typeOfEnemy = CURSED) {
-        switch (typeOfEnemy) {
-        case Regular:
-            break;
-        case Speedy:
-            speed = 50.0f;
-            shape.setFillColor(sf::Color::Color(51, 255, 187));
-            break;
-        case Tanky:
-            speed = 10.0f;
-            health = 75.0f;
-            shape.setFillColor(sf::Color::Color(0, 204, 34));
-            break;
-        case MiniBoss:
-            speed = 50.0f;
-            health = 75.0f;
-            shape.setFillColor(sf::Color::Color(0, 77, 50));
-            break;
-        case MegaBoss:
-            speed = 75.0f;
-            health = 125.0f;
-            shape.setFillColor(sf::Color::Color(0, 77, 50));
-            shape.setSize(sf::Vector2f(60.0f, 60.0f));
-            break;
-        case SpeedDemon:
-            speed = 270.0f;
-            health = 5.0f;
-            shape.setFillColor(sf::Color::Color(255, 255, 255));
-            break;
-        default:
-            throw new std::runtime_error("Illegal enemy type");
-            break;
-        }
-    }
+    sf::CircleShape shape;
+    enum PackageType{Health, Faster_shooter, spike};
+    float expirationTime{};
     
-
-    Enemy(float x, float y, EnemyType typeOfEnemy = Regular) {
-        
-        Type = typeOfEnemy;
-        shape.setOutlineColor(sf::Color::Red);
-        shape.setSize(sf::Vector2f(40.0f, 40.0f)); // Size of the enemy
-        convertEnemy(typeOfEnemy);
-        
-        if (typeOfEnemy == Regular) {
+    Package(float x, float y, Package::PackageType typeOfPackage = Health) {
+        shape.setScale(sf::Vector2f(40, 40));
+        shape.setRadius(50);
+        shape.setFillColor(sf::Color::Color(120, 20, 50));
+        shape.setPosition(x, y);
+        switch (typeOfPackage) {
+        case Health:
             
-            shape.setFillColor(sf::Color::Green); // Color of the enemy
+            break;
         }
-        shape.setPosition(x, y);
         
-    }
-    void takeDamage(float damage) {
-        health -= damage;
+
     }
 
-    EnemyType Enemytype() const {
-        return Type;
+    void update() {
     }
 
-    bool isDead() const {
-        return health <= 0;
-    }
-
-    void update(float deltaTime, sf::Vector2f playerPosition) {
-        sf::Vector2f movementDirection = playerPosition - shape.getPosition();
-        float distance = std::sqrt(movementDirection.x * movementDirection.x + movementDirection.y * movementDirection.y);
-
-        // Normalize the movement vector and update the position
-        if (distance > 0) {
-            movementDirection /= distance;
-            shape.move(movementDirection * speed * deltaTime);
-        }
-    }
 };
 
-
-
-class Bullet {
-public:
-    sf::RectangleShape shape;
-    float speed = 1000.0f; // Speed of the bullet
-    sf::Vector2f direction;
-    bool toBeRemoved{ false };
-
-    Bullet(float x, float y, sf::Vector2f dir) : direction(dir) {
-        shape.setSize(sf::Vector2f(10.0f, 5.0f));
-        shape.setFillColor(sf::Color::Yellow);
-        shape.setPosition(x, y);
-
-        // Calculate rotation
-        float rotation = static_cast<float>(atan2(direction.y, direction.x) * 180 / 3.14159265);
-        shape.setRotation(rotation);
-    }
-
-
-
-    // Call this method when a bullet hits an enemy
-    void hit() {
-        toBeRemoved = true;
-    }
-
-    void update(float deltaTime) {
-        shape.move(direction * speed * deltaTime);
-    }
-};
 
 bool Reload(long long Time) {
 
@@ -269,19 +98,26 @@ int WinMain() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Shooter");
     window.setFramerateLimit(60);
     Player player(400, 300);
-    std::vector<Bullet> bullets;
+    std::vector<Bullet> bullets{};
+    std::vector<Package> packages{};
     bool paused{false};
     sf::Clock clocka;
     int waveElapse{};
-   // ExtractResource(L"ID_MYFONT", L"temp_font.ttf");
-
-    // Load the font using SFML
-    // sf::Font font;
-    // if (!font.loadFromFile("temp_font.ttf")) {
-        // Handle error - Failed to load font
-        // return -1;
-    // }
-    
+    sf::Font font{};
+    sf::Clock packageClock;
+    if (font.loadFromFile("Orbitron-Regular.ttf")) {
+        std::ofstream error;
+        error.open("error.txt");
+        error << "Font importing error - File does not exist (Orbitron.tff)";
+        error.close();
+        throw std::runtime_error("Font importing error");
+    }
+    sf::Text scoreDisplay{};
+    scoreDisplay.setFont(font);
+    scoreDisplay.setCharacterSize(50);
+    scoreDisplay.setString("Hi");
+    scoreDisplay.setPosition(100, 100);
+    window.draw(scoreDisplay);
     sf::Clock clock;
     sf::Clock clockBullets;
     std::vector<Enemy> enemies;
@@ -312,10 +148,11 @@ int WinMain() {
             break;
         }
 
+
         player.update(deltaTime);
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        sf::Vector2f playerPos = player.shape.getPosition();
+        sf::Vector2f playerPos = player.getShape().getPosition();
 
         sf::Vector2f direction = sf::Vector2f(mousePos.x - playerPos.x, mousePos.y - playerPos.y);
         float magnitude = std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -370,8 +207,8 @@ int WinMain() {
                     enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MiniBoss));
                 else if (random <= 95)
                     enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::SpeedDemon));
-                else if (random <= 100)
-                    enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
+                //else if (random <= 100)
+                    //enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::MegaBoss));
                 else
                     enemies.push_back(Enemy(rand() % window.getSize().x, 0, Enemy::CURSED));
 
@@ -383,28 +220,28 @@ int WinMain() {
 
 
         for (auto& enemy : enemies) {
-            enemy.update(deltaTime, player.shape.getPosition());
+            enemy.update(deltaTime, player.getShape().getPosition());
 
             // Check for collision with player
-            if (enemy.shape.getGlobalBounds().intersects(player.shape.getGlobalBounds())) {
+            if (enemy.getShape().getGlobalBounds().intersects(player.getShape().getGlobalBounds())) {
                 player.takeDamage(10.0f); // Example damage amount
             }
 
-            window.draw(enemy.shape);
+            window.draw(enemy.getShape());
         }
         // Remove dead enemies and used bullets
         enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Enemy& enemy) {
-            if (enemy.isDead() && enemy.Enemytype() == Enemy::Regular)
+            if (enemy.isDead() && enemy.getType() == Enemy::Regular)
                 score += regularScore;
-            else if (enemy.isDead() && enemy.Enemytype() == Enemy::Speedy)
+            else if (enemy.isDead() && enemy.getType() == Enemy::Speedy)
                 score += speedyScore;
-            else if (enemy.isDead() && enemy.Enemytype() == Enemy::Tanky)
+            else if (enemy.isDead() && enemy.getType() == Enemy::Tanky)
                 score += tankyScore;
-            else if (enemy.isDead() && enemy.Enemytype() == Enemy::MiniBoss)
+            else if (enemy.isDead() && enemy.getType() == Enemy::MiniBoss)
                 score += bossScore;
-            else if (enemy.isDead() && enemy.Enemytype() == Enemy::MegaBoss)
+            else if (enemy.isDead() && enemy.getType() == Enemy::MegaBoss)
                 score += bossScore * 3;
-            else if (enemy.isDead() && enemy.Enemytype() == Enemy::SpeedDemon)
+            else if (enemy.isDead() && enemy.getType() == Enemy::SpeedDemon)
                 score += speedyScore * 3;
             else if (enemy.isDead())
                 score -= -10000000000;
@@ -412,7 +249,7 @@ int WinMain() {
             }), enemies.end());
 
         bullets.erase(std::remove_if(bullets.begin(), bullets.end(), [](const Bullet& bullet) {
-            return bullet.toBeRemoved;
+            return bullet.shouldBeRemoved();
             }), bullets.end());
 
         // Optional: Remove off-screen enemies
@@ -425,33 +262,42 @@ int WinMain() {
 
         // Draw Enemies
         for (auto& enemy : enemies) {
-            enemy.update(deltaTime, player.shape.getPosition());
+            enemy.update(deltaTime, player.getShape().getPosition());
 
             // Check for collision with player
-            if (enemy.shape.getGlobalBounds().intersects(player.shape.getGlobalBounds())) {
+            if (enemy.getShape().getGlobalBounds().intersects(player.getShape().getGlobalBounds())) {
                 player.takeDamage(10.0f); // Example damage amount
             }
 
-            window.draw(enemy.shape);
+            window.draw(enemy.getShape());
         }
 
 
         for (auto& bullet : bullets) {
             bullet.update(deltaTime);
-            window.draw(bullet.shape);
+            window.draw(bullet.getShape());
+        }
+
+        if (packageClock.getElapsedTime().asSeconds() == 1.0f) {
+            packages.push_back(Package(rand() % window.getSize().x, rand() % window.getSize().y));
+            packageClock.restart();
+        }
+
+        for (auto& package : packages) {
+            window.draw(package.shape);
         }
 
         // Handle Bullet-Enemy Collisions
         for (auto& bullet : bullets) {
             for (auto& enemy : enemies) {
-                if (bullet.shape.getGlobalBounds().intersects(enemy.shape.getGlobalBounds())) {
+                if (bullet.getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
                     enemy.takeDamage(20.0f); // Example damage value
                     bullet.hit(); // Mark the bullet for removal
                 }
             }
         }
 
-            window.draw(player.shape);
+            window.draw(player.getShape());
 
             window.display();
         }

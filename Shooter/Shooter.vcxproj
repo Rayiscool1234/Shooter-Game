@@ -143,10 +143,23 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bullet.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Gun.cpp" />
+    <ClCompile Include="Gun.hpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Package.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="error.txt" />
     <Text Include="score.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Bullet.hpp" />
+    <ClInclude Include="Enemy.hpp" />
+    <ClInclude Include="Package.hpp" />
+    <ClInclude Include="Player.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
