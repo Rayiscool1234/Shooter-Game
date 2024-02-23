@@ -1,11 +1,12 @@
 #include "Gun.hpp"
+sf::Clock scclock{};
 
 Gun::Gun(GunType type) : type(type), lastShotTime(0.0f) {
     initializeProperties();
 }
 
 void Gun::shoot(sf::Vector2f position, sf::Vector2f direction) {
-    float currentTime = /* method to get current time */;
+    float currentTime = scclock.getElapsedTime().asSeconds();
     if (currentTime - lastShotTime >= 1.0f / fireRate) {
         // Create a new bullet
         Bullet bullet(position.x, position.y, direction * bulletSpeed);

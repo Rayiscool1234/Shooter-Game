@@ -7,7 +7,7 @@
 #include "player.hpp"
 #include "Enemy.hpp"
 #include "Bullet.hpp"
-
+#include "Package.hpp"
 
 sf::Clock randclock;
 
@@ -25,63 +25,9 @@ int random_int(int min, int max) {
     return min + std::rand() % (max - min + 1);
 }
 
-/*
-
-void ExtractResource(const std::wstring& resourceName, const std::wstring& outputFilePath) {
-    HRSRC resourceHandle = FindResource(nullptr, resourceName.c_str(), RT_RCDATA);
-    if (!resourceHandle) {
-        throw std::runtime_error("Failed to find resource.");
-    }
-
-    HGLOBAL resourceDataHandle = LoadResource(nullptr, resourceHandle);
-    if (!resourceDataHandle) {
-        throw std::runtime_error("Failed to load resource.");
-    }
-
-    void* pResourceData = LockResource(resourceDataHandle);
-    DWORD resourceSize = SizeofResource(nullptr, resourceHandle);
-
-    std::ofstream ofs(outputFilePath, std::ios::binary);
-    ofs.write(static_cast<char*>(pResourceData), resourceSize);
-    ofs.close();
-}SSSSSSSSSSS
-
-*/
 
 
-/// \brief Player Controller
-/// 
-/// This class has a premade character and controls along side it
-///
-/// 
-/// 
-/// 
 
-
-class Package {
-public:
-    sf::CircleShape shape;
-    enum PackageType{Health, Faster_shooter, spike};
-    float expirationTime{};
-    
-    Package(float x, float y, Package::PackageType typeOfPackage = Health) {
-        shape.setScale(sf::Vector2f(40, 40));
-        shape.setRadius(50);
-        shape.setFillColor(sf::Color::Color(120, 20, 50));
-        shape.setPosition(x, y);
-        switch (typeOfPackage) {
-        case Health:
-            
-            break;
-        }
-        
-
-    }
-
-    void update() {
-    }
-
-};
 
 
 bool Reload(long long Time) {
@@ -103,21 +49,22 @@ int WinMain() {
     bool paused{false};
     sf::Clock clocka;
     int waveElapse{};
-    sf::Font font{};
+    sf::Font font;
     sf::Clock packageClock;
-    if (font.loadFromFile("Orbitron-Regular.ttf")) {
+    if (font.loadFromFile("resources/Orbitron-Regular.ttf")) {
         std::ofstream error;
         error.open("error.txt");
         error << "Font importing error - File does not exist (Orbitron.tff)";
         error.close();
         throw std::runtime_error("Font importing error");
     }
-    sf::Text scoreDisplay{};
+    sf::Text scoreDisplay;
     scoreDisplay.setFont(font);
-    scoreDisplay.setCharacterSize(50);
-    scoreDisplay.setString("Hi");
+    scoreDisplay.setCharacterSize(24);
+    scoreDisplay.setString("MEOW IS LIKE SO COOL AND ALL AND OYU MIGHT AKSDWAKSJDWAKSDKWA");
     scoreDisplay.setPosition(100, 100);
-    window.draw(scoreDisplay);
+    scoreDisplay.setFillColor(sf::Color::White);
+    
     sf::Clock clock;
     sf::Clock clockBullets;
     std::vector<Enemy> enemies;
@@ -165,7 +112,7 @@ int WinMain() {
 
 
         waveElapse = clocka.getElapsedTime().asMilliseconds() / 100000;
-
+        
 
 
         // In game loop
@@ -272,19 +219,32 @@ int WinMain() {
             window.draw(enemy.getShape());
         }
 
+        if (packageClock.getElapsedTime().asSeconds() >= 10.0f - waveElapse) {
+            packages.push_back(Package(Package::Health, rand() % window.getSize().x, rand() % window.getSize().y));
+            packageClock.restart();
+        }
+
+        for (auto& package : packages) {
+            if (player.getShape().getGlobalBounds().intersects(package.getShape().getGlobalBounds())) {
+                package.applyEffect(player); // This method will also mark the package for removal
+            }
+        }
+
+        // Remove used packages
+        packages.erase(
+            std::remove_if(packages.begin(), packages.end(),
+                [](const Package& p) { return p.shouldBeRemoved(); }),
+            packages.end());
+
 
         for (auto& bullet : bullets) {
             bullet.update(deltaTime);
             window.draw(bullet.getShape());
         }
 
-        if (packageClock.getElapsedTime().asSeconds() == 1.0f) {
-            packages.push_back(Package(rand() % window.getSize().x, rand() % window.getSize().y));
-            packageClock.restart();
-        }
 
         for (auto& package : packages) {
-            window.draw(package.shape);
+            window.draw(package.getShape());
         }
 
         // Handle Bullet-Enemy Collisions
@@ -298,7 +258,7 @@ int WinMain() {
         }
 
             window.draw(player.getShape());
-
+            window.draw(scoreDisplay);
             window.display();
         }
         // Saves score in file 'score.txt'

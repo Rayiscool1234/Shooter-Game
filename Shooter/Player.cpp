@@ -20,6 +20,23 @@ void Player::equipGun(Gun* gun) {
     currentGun = gun;
 }
 
+void Player::shoot(sf::Vector2f direction) {
+    if (currentGun) {
+        currentGun->shoot(shape.getPosition(), direction);
+    }
+}
+
+void Player::increaseHealth(int healthAmount) {
+    if (health < 1000.0f) {
+        if (health + healthAmount <= 1000.0f) {
+            health += 50;
+        }
+        else {
+            health += 1000.0f - health;
+        }
+    }
+}
+
 bool Player::isDead() const {
     return health <= 0;
 }

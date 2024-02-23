@@ -9,16 +9,16 @@ Package::Package(PackageType type, float x, float y)
 void Package::applyEffect(Player& player) {
     switch (type) {
     case Health:
-        player.increaseHealth(50); // Example: increase player's health
+        player.increaseHealth(250); // Example: increase player's health
         break;
     case SpeedBoost:
-        player.setSpeedBoost(true); // Example: set player's speed boost flag
+        // player.setSpeedBoost(true); // Example: set player's speed boost flag
         break;
     case Shield:
-        player.activateShield(true); // Example: activate player's shield
+        // player.activateShield(true); // Example: activate player's shield
         break;
     case Firepower:
-        player.upgradeFirepower(); // Example: upgrade player's firepower
+        // player.upgradeFirepower(); // Example: upgrade player's firepower
         break;
     }
     toBeRemoved = true;
